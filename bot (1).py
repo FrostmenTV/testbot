@@ -42,7 +42,6 @@ def button(message):
         hyperlink = f'<a href="tg://user?id={user_id}">{user_name}</a>'
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton("Посты") #после /start
-        # btn2 = types.KeyboardButton("") #после /start
-        markup.add(btn1,btn2)
+        markup.add(btn1)
         bot.send_message(message.chat.id, text=f'{hyperlink},Вы вернулись в главное меню.' .format(message.from_user), reply_markup=markup, parse_mode='HTML')    
 bot.polling(none_stop=True) #обязательная для работы бота часть
