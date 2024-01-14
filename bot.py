@@ -4,7 +4,7 @@ import sqlite3
 import config
 
 bot = telebot.TeleBot(config.token)
-markup = ''
+
 
 # начальный запуск
 @bot.message_handler(commands=["start"])
@@ -31,37 +31,7 @@ def start(message):
                          reply_markup=markup)
     else:
         bot.send_message(message.chat.id, "❌ Доступ закрыт.")
-#идем по постам
-@bot.message_handler(content_types=['text'])
 
-def get_text_messages(message): #переменная для 2 сцены
-
-    markup = ''
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)#создаем и не нужно будет указывать её постоянно в if (создание кнопок)
-    if message.text == 'Посты':
-        btn1 = types.KeyboardButton('Музыка') 
-        btn2 = types.KeyboardButton('Опрос')
-        btn3 = types.KeyboardButton('Лучший адм')
-        back = types.KeyboardButton("Вернуться в главное меню")
-        markup.add(btn1, btn2, btn3,back)
-        bot.send_message(message.chat.id,
-             "Привет, {0.first_name}, нажми на необходимую тебе кнопку".format(message.from_user),reply_markup=markup)
-    
-    if message.text == 'Музыка':
-        btn1 = types.KeyboardButton('Готовый шаблон')
-        btn2 = types.KeyboardButton('Чистый шаблон')
-        back = types.KeyboardButton("Вернуться в главное меню")
-        markup.add(btn1,btn2,back) 
-        bot.send_message(message.chat.id,
-                         '{0.first_name}, Выбери нужную тебе кнопку.'.format(message.from_user),reply_markup=markup)
-    
-    if (message.text == "Вернуться в главное меню"):
-        item1 = types.KeyboardButton("Посты")
-        item2 = types.KeyboardButton("Шаблоны")
-        markup.add(item1, item2)
-        bot.send_message(message.chat.id,
-                         "Привет, {0.first_name}, нажми на необходимую тебе кнопку".format(message.from_user),
-                         reply_markup=markup) 
 
 @bot.message_handler(commands=["wlist"])
 def wlist(message):
@@ -87,8 +57,8 @@ def wlist(message):
         conn.close()
     else:
         bot.send_message(message.chat.id, f'Неправильный формат ввода.\n'
-        'Для добавления пользователя используйте\n /wlist ID пользователя,ник нейм и 1-0\n'
-        'Где 1 - супер пользователь, 0 обычный пользователь')
+                                          'Для добавления пользователя используйте\n /wlist ID пользователя,ник нейм и 1-0\n'
+                                          'Где 1 - супер пользователь, 0 обычный пользователь')
 
 
 @bot.message_handler(commands=["delwlist"])
@@ -114,6 +84,43 @@ def delwlist(message):
         bot.send_message(message.chat.id, "Неправильный формат ввода.")
 
 
+# идем по постам
+@bot.message_handler(content_types=['text'])
+def get_text_messages(message):  # переменная для 2 сцены
+    if user_exists(message.from_user.id):
+        markup = ''
+        markup = types.ReplyKeyboardMarkup(
+            resize_keyboard=True)  # создаем и не нужно будет указывать её постоянно в if (создание кнопок)
+        if message.text == 'Посты':
+            btn1 = types.KeyboardButton('Музыка')
+            btn2 = types.KeyboardButton('Опрос')
+            btn3 = types.KeyboardButton('Лучший адм')
+            back = types.KeyboardButton("Вернуться в главное меню")
+            markup.add(btn1, btn2, btn3, back)
+            bot.send_message(message.chat.id,
+                             "Привет, {0.first_name}, нажми на необходимую тебе кнопку".format(message.from_user),
+                             reply_markup=markup)
+
+        elif message.text == 'Музыка':
+            btn1 = types.KeyboardButton('Готовый шаблон')
+            btn2 = types.KeyboardButton('Чистый шаблон')
+            back = types.KeyboardButton("Вернуться в главное меню")
+            markup.add(btn1, btn2, back)
+            bot.send_message(message.chat.id,
+                             '{0.first_name}, Выбери нужную тебе кнопку.'.format(message.from_user),
+                             reply_markup=markup)
+
+        elif (message.text == "Вернуться в главное меню"):
+            item1 = types.KeyboardButton("Посты")
+            item2 = types.KeyboardButton("Шаблоны")
+            markup.add(item1, item2)
+            bot.send_message(message.chat.id,
+                             "Привет, {0.first_name}, нажми на необходимую тебе кнопку".format(message.from_user),
+                             reply_markup=markup)
+    else:
+        bot.send_message(message.chat.id, "❌ Доступ закрыт.")
+
+
 def user_exists(user_id):
     conn = sqlite3.connect('main.db')
     cursor = conn.cursor()
@@ -121,9 +128,11 @@ def user_exists(user_id):
     count = cursor.fetchone()[0]
     return count > 0
 
+
 @bot.callback_query_handler(func=lambda call: call.data == "accept")
 def handle_form_accept(call):
     bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
-    
+
+
 if __name__ == '__main__':
     bot.polling()
